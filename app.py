@@ -93,7 +93,7 @@ def portfolio_overview_tab(inference_engine):
                     df, x="reserve_gap", nbins=50, title="Reserve Gap Distribution"
                 )
                 fig.update_layout(height=400)
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width="stretch")
         except Exception as e:
             st.error(f"Error creating reserve gap chart: {e}")
 
@@ -111,7 +111,7 @@ def portfolio_overview_tab(inference_engine):
                     df, values="count", names="industry", title="Claims by Industry"
                 )
                 fig.update_layout(height=400)
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width="stretch")
         except Exception as e:
             st.error(f"Error creating industry chart: {e}")
 
@@ -121,7 +121,7 @@ def portfolio_overview_tab(inference_engine):
     try:
         recent_inferences = inference_engine.get_inference_history(limit=100)
         if len(recent_inferences) > 0:
-            st.dataframe(recent_inferences.head(10), use_container_width=True)
+            st.dataframe(recent_inferences.head(10), width="stretch")
         else:
             st.info("No inference history available")
     except Exception as e:
@@ -178,7 +178,7 @@ def claim_explorer_tab(inference_engine):
                         )
                     )
                     fig.update_layout(title="Reserve Development Over Time", height=400)
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(fig, width="stretch")
 
                 with col2:
                     st.subheader("Latest RL Recommendation")
@@ -211,14 +211,14 @@ def claim_explorer_tab(inference_engine):
                                 exp_df[
                                     ["feature_name", "shap_value", "explanation_rank"]
                                 ],
-                                use_container_width=True,
+                                width="stretch",
                             )
                     except Exception as e:
                         st.error(f"Error generating recommendation: {e}")
 
                 st.markdown("---")
                 st.subheader("Claim History")
-                st.dataframe(claim_data, use_container_width=True)
+                st.dataframe(claim_data, width="stretch")
 
             except Exception as e:
                 st.error(f"Error analyzing claim: {e}")
@@ -249,7 +249,7 @@ def rl_analysis_tab(inference_engine):
                 fig = px.bar(
                     action_df, x="Action", y="Count", title="RL Action Distribution"
                 )
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width="stretch")
             else:
                 st.info(metrics["error"])
         except Exception as e:
@@ -291,7 +291,7 @@ def rl_analysis_tab(inference_engine):
             )
 
             if len(history_df) > 0:
-                st.dataframe(history_df.head(limit), use_container_width=True)
+                st.dataframe(history_df.head(limit), width="stretch")
 
                 col1, col2 = st.columns(2)
 
@@ -302,7 +302,7 @@ def rl_analysis_tab(inference_engine):
                         title="Confidence Distribution",
                         nbins=20,
                     )
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(fig, width="stretch")
 
                 with col2:
                     fig = px.scatter(
@@ -311,7 +311,7 @@ def rl_analysis_tab(inference_engine):
                         y="policy_confidence",
                         title="Action vs Confidence",
                     )
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(fig, width="stretch")
             else:
                 st.info("No inference history found for the selected period")
         except Exception as e:
@@ -353,7 +353,7 @@ def settings_tab(inference_engine):
             "Reserve Adjustment": inference_engine.config["environment"]["actions"],
         }
     )
-    st.dataframe(actions_df, use_container_width=True)
+    st.dataframe(actions_df, width="stretch")
 
     st.markdown("---")
     st.subheader("Database Information")

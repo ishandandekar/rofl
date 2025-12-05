@@ -4,6 +4,9 @@ import numpy as np
 from pathlib import Path
 from typing import Dict, Any, List
 import logging
+import sys
+
+sys.path.append(str(Path(__file__).parent.parent))
 
 from utils.db import ROFLDatabase
 from utils.transforms import FeatureEngineer
@@ -38,7 +41,7 @@ class ROFLTrainer:
         with open(config_path, "r") as f:
             return yaml.safe_load(f)
 
-    def prepare_data(self, csv_path: str = None) -> List[pd.DataFrame]:
+    def prepare_data(self, csv_path: str | None = None) -> List[pd.DataFrame]:
         if csv_path:
             logger.info(f"Loading data from {csv_path}")
             self.db.load_claims_data(csv_path)
@@ -74,7 +77,7 @@ class ROFLTrainer:
         }
 
         for episode in range(num_episodes):
-            episode_data = np.random.choice(episodes)
+            episode_data = episodes[np.random.randint(len(episodes))]
             metrics = self.dqn_agent.train_episode(self.env)
 
             training_metrics["episode_rewards"].append(metrics["total_reward"])
@@ -106,7 +109,7 @@ class ROFLTrainer:
         training_metrics = {"episode_rewards": [], "episode_lengths": []}
 
         for episode in range(num_episodes):
-            episode_data = np.random.choice(episodes)
+            episode_data = episodes[np.random.randint(len(episodes))]
             metrics = self.ppo_agent.train_episode(self.env)
 
             training_metrics["episode_rewards"].append(metrics["total_reward"])
@@ -129,7 +132,7 @@ class ROFLTrainer:
 
         return training_metrics
 
-    def train_both(self, csv_path: str = None) -> Dict[str, Any]:
+    def train_both(self, csv_path: str | None = None) -> Dict[str, Any]:
         episodes = self.prepare_data(csv_path)
 
         logger.info("Training DQN agent")

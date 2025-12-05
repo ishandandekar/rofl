@@ -43,7 +43,7 @@ class DQNAgent:
     def remember(self, state, action, reward, next_state, done):
         state_tensor = torch.FloatTensor(state).to(self.device)
         next_state_tensor = torch.FloatTensor(next_state).to(self.device)
-        action_tensor = torch.tensor([action]).to(self.device)
+        action_tensor = torch.tensor([action], dtype=torch.long).to(self.device)
         reward_tensor = torch.tensor([reward]).to(self.device)
         done_tensor = torch.tensor([done]).to(self.device)
 
@@ -59,11 +59,17 @@ class DQNAgent:
             batch_size
         )
 
-        current_q_values = self.q_network(states).gather(1, actions.unsqueeze(1))
+        actions_long = actions.long()
+        if actions_long.dim() == 1:
+            actions_long = actions_long.unsqueeze(1)
+        current_q_values = self.q_network(states).gather(1, actions_long)
         next_q_values = self.target_network(next_states).max(1)[0].detach()
         target_q_values = rewards + (self.gamma * next_q_values * (1 - dones))
 
-        loss = nn.MSELoss()(current_q_values.squeeze(), target_q_values)
+        # Ensure both tensors have the same shape
+        current_q_values = current_q_values.squeeze()
+
+        loss = nn.MSELoss()(current_q_values, target_q_values)
 
         self.optimizer.zero_grad()
         loss.backward()
@@ -79,13 +85,14 @@ class DQNAgent:
     def train_episode(
         self, env: ClaimReserveEnv, max_steps: int = 60
     ) -> Dict[str, float]:
-        state = env.reset()
+        state, _ = env.reset()
         total_reward = 0
         steps = 0
 
         for step in range(max_steps):
             action = self.act(state, training=True)
-            next_state, reward, done, info = env.step(action)
+            next_state, reward, terminated, truncated, info = env.step(action)
+            done = terminated or truncated
 
             self.remember(state, action, reward, next_state, done)
             state = next_state
@@ -106,13 +113,14 @@ class DQNAgent:
         total_steps = []
 
         for _ in range(num_episodes):
-            state = env.reset()
+            state, _ = env.reset()
             episode_reward = 0
             steps = 0
 
             while True:
                 action = self.act(state, training=False)
-                next_state, reward, done, info = env.step(action)
+                next_state, reward, terminated, truncated, info = env.step(action)
+                done = terminated or truncated
 
                 state = next_state
                 episode_reward += reward
@@ -125,9 +133,9 @@ class DQNAgent:
             total_steps.append(steps)
 
         return {
-            "avg_reward": np.mean(total_rewards),
-            "avg_steps": np.mean(total_steps),
-            "std_reward": np.std(total_rewards),
+            "avg_reward": float(np.mean(total_rewards)),
+            "avg_steps": float(np.mean(total_steps)),
+            "std_reward": float(np.std(total_rewards)),
         }
 
     def save(self, path: str):

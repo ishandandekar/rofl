@@ -30,15 +30,15 @@ class PPOAgent:
         state_tensor = torch.FloatTensor(state).unsqueeze(0).to(self.device)
         action, log_prob, value = self.network.get_action(state_tensor)
 
-        return action.item(), log_prob, value
+        return int(action.item()), log_prob, value
 
     def remember(self, state, action, log_prob, value, reward, done):
         self.memory.append(
             {
                 "state": torch.FloatTensor(state).to(self.device),
                 "action": torch.tensor(action).to(self.device),
-                "log_prob": log_prob,
-                "value": value,
+                "log_prob": log_prob.detach(),
+                "value": value.detach(),
                 "reward": torch.tensor(reward).to(self.device),
                 "done": torch.tensor(done).to(self.device),
             }
@@ -81,7 +81,9 @@ class PPOAgent:
         rewards = [m["reward"].item() for m in self.memory]
         dones = [m["done"].item() for m in self.memory]
 
-        returns, advantages = self.compute_advantages(rewards, values, dones)
+        returns, advantages = self.compute_advantages(
+            rewards, [v.squeeze().detach() for v in values], dones
+        )
 
         for epoch in range(epochs):
             for _ in range(0, len(states), batch_size):
@@ -120,13 +122,14 @@ class PPOAgent:
     def train_episode(
         self, env: ClaimReserveEnv, max_steps: int = 60
     ) -> Dict[str, float]:
-        state = env.reset()
+        state, _ = env.reset()
         total_reward = 0
         steps = 0
 
         for step in range(max_steps):
             action, log_prob, value = self.act(state)
-            next_state, reward, done, info = env.step(action)
+            next_state, reward, terminated, truncated, info = env.step(action)
+            done = terminated or truncated
 
             self.remember(state, action, log_prob, value, reward, done)
 
@@ -148,7 +151,7 @@ class PPOAgent:
         total_steps = []
 
         for _ in range(num_episodes):
-            state = env.reset()
+            state, _ = env.reset()
             episode_reward = 0
             steps = 0
 
@@ -156,7 +159,8 @@ class PPOAgent:
                 with torch.no_grad():
                     action, _, _ = self.act(state)
 
-                next_state, reward, done, info = env.step(action)
+                next_state, reward, terminated, truncated, info = env.step(action)
+                done = terminated or truncated
 
                 state = next_state
                 episode_reward += reward
@@ -169,9 +173,9 @@ class PPOAgent:
             total_steps.append(steps)
 
         return {
-            "avg_reward": np.mean(total_rewards),
-            "avg_steps": np.mean(total_steps),
-            "std_reward": np.std(total_rewards),
+            "avg_reward": float(np.mean(total_rewards)),
+            "avg_steps": float(np.mean(total_steps)),
+            "std_reward": float(np.std(total_rewards)),
         }
 
     def save(self, path: str):

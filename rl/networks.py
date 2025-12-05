@@ -93,10 +93,10 @@ class ReplayBuffer:
         batch = random.sample(self.buffer, batch_size)
 
         states = torch.stack([item[0] for item in batch])
-        actions = torch.tensor([item[1] for item in batch])
-        rewards = torch.tensor([item[2] for item in batch], dtype=torch.float32)
+        actions = torch.stack([item[1] for item in batch])
+        rewards = torch.stack([item[2] for item in batch]).float().squeeze()
         next_states = torch.stack([item[3] for item in batch])
-        dones = torch.tensor([item[4] for item in batch], dtype=torch.float32)
+        dones = torch.stack([item[4] for item in batch]).float().squeeze()
 
         return states, actions, rewards, next_states, dones
 

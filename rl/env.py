@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from typing import Tuple, Dict, Any, Optional
-from gym import spaces
+from gymnasium import spaces
 import random
 
 
@@ -24,21 +24,30 @@ class ClaimReserveEnv:
 
         self.development_curves = self._initialize_development_curves()
 
-    def reset(self, episode_data: Optional[pd.DataFrame] = None) -> np.ndarray:
+    def reset(
+        self,
+        episode_data: Optional[pd.DataFrame] = None,
+        seed: Optional[int] = None,
+        options: Optional[Dict[str, Any]] = None,
+    ) -> Tuple[np.ndarray, Dict[str, Any]]:
+        if seed is not None:
+            np.random.seed(seed)
+            random.seed(seed)
+
         if episode_data is not None:
             self.current_episode = episode_data.reset_index(drop=True)
         else:
             self.current_episode = self._generate_synthetic_episode()
 
         self.current_step = 0
-        return self._get_state()
+        return self._get_state(), {}
 
-    def step(self, action: int) -> Tuple[np.ndarray, float, bool, Dict[str, Any]]:
+    def step(self, action: int) -> Tuple[np.ndarray, float, bool, bool, Dict[str, Any]]:
         if self.current_episode is None:
             raise ValueError("Environment not reset. Call reset() first.")
 
         if self.current_step >= len(self.current_episode) - 1:
-            return self._get_state(), 0.0, True, {}
+            return self._get_state(), 0.0, True, False, {}
 
         reward = self._calculate_reward(action)
         info = self._get_info(action)
@@ -46,12 +55,10 @@ class ClaimReserveEnv:
         self.current_step += 1
         next_state = self._get_state()
 
-        done = (
-            self.current_step >= len(self.current_episode) - 1
-            or self.current_step >= self.max_steps
-        )
+        terminated = self.current_step >= len(self.current_episode) - 1
+        truncated = self.current_step >= self.max_steps
 
-        return next_state, reward, done, info
+        return next_state, reward, terminated, truncated, info
 
     def _get_state(self) -> np.ndarray:
         if self.current_episode is None or self.current_step >= len(

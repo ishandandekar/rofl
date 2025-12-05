@@ -190,7 +190,11 @@ class ROFLInference:
         return explanations[:top_k]
 
     def get_inference_history(
-        self, claim_id: str = None, start_date: str = None, end_date: str = None
+        self,
+        claim_id: str = None,
+        start_date: str = None,
+        end_date: str = None,
+        limit: int = None,
     ) -> pd.DataFrame:
         query = "SELECT * FROM rofl_inference WHERE 1=1"
 
@@ -202,6 +206,9 @@ class ROFLInference:
             query += f" AND as_at_date <= '{end_date}'"
 
         query += " ORDER BY inference_ts DESC"
+
+        if limit:
+            query += f" LIMIT {limit}"
 
         return self.db.conn.execute(query).df()
 

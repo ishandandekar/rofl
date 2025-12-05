@@ -103,36 +103,37 @@ class ROFLDatabase:
     def save_explanations(self, explanations: pd.DataFrame):
         self.conn.execute("INSERT INTO shap_explanations SELECT * FROM explanations")
 
-def get_portfolio_stats(self) -> Dict[str, Any]:
+    def get_portfolio_stats(self) -> Dict[str, Any]:
         result = self.conn.execute("""
-            SELECT 
-                COUNT(DISTINCT claim_id) as total_claims,
-                COUNT(*) as total_snapshots,
-                AVG(reserve_gap) as avg_reserve_gap,
-                STDDEV(reserve_gap) as std_reserve_gap,
-                COUNT(DISTINCT industry) as industries,
-                COUNT(DISTINCT loss_category) as loss_categories
-            FROM claims_long
-        """).fetchone()
-        
+                SELECT 
+                    COUNT(DISTINCT claim_id) as total_claims,
+                    COUNT(*) as total_snapshots,
+                    AVG(reserve_gap) as avg_reserve_gap,
+                    STDDEV(reserve_gap) as std_reserve_gap,
+                    COUNT(DISTINCT industry) as industries,
+                    COUNT(DISTINCT loss_category) as loss_categories
+                FROM claims_long
+            """).fetchone()
+
         if result is None:
             return {
-                'total_claims': 0,
-                'total_snapshots': 0, 
-                'avg_reserve_gap': 0.0,
-                'std_reserve_gap': 0.0,
-                'industries': 0,
-                'loss_categories': 0
+                "total_claims": 0,
+                "total_snapshots": 0,
+                "avg_reserve_gap": 0.0,
+                "std_reserve_gap": 0.0,
+                "industries": 0,
+                "loss_categories": 0,
             }
-        
+
         return {
-            'total_claims': result[0],
-            'total_snapshots': result[1], 
-            'avg_reserve_gap': result[2],
-            'std_reserve_gap': result[3],
-            'industries': result[4],
-            'loss_categories': result[5]
+            "total_claims": result[0],
+            "total_snapshots": result[1],
+            "avg_reserve_gap": result[2],
+            "std_reserve_gap": result[3],
+            "industries": result[4],
+            "loss_categories": result[5],
         }
 
-    def close(self):
-        self.conn.close()
+
+def close(self):
+    self.conn.close()
