@@ -1,0 +1,20 @@
+{
+  "claims_long": {
+    "claim_id": "TEXT",
+    "client_id": "TEXT", 
+    "industry": "TEXT",
+    "loss_category": "TEXT",
+    "cause_of_loss": "TEXT",
+    "cause_code": "TEXT",
+    "date_of_loss": "DATE",
+    "date_notified": "DATE", 
+    "as_at_date": "DATE",
+    "paid": "DOUBLE",
+    "outstanding": "DOUBLE",
+    "total_incurred": "DOUBLE",
+    "claim_status": "TEXT",
+    "t": "INTEGER",
+    "paid_velocity": "DOUBLE",
+    "reserve_gap": "DOUBLE"
+  }
+}

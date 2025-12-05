@@ -1,0 +1,11 @@
+{
+  "claim_id": "TEXT",
+  "as_at_date": "DATE",
+  "recommended_action_idx": "INT",
+  "recommended_pct": "DOUBLE",
+  "recommended_new_reserve": "DOUBLE",
+  "policy_confidence": "DOUBLE",
+  "model_type": "TEXT",
+  "model_path": "TEXT",
+  "inference_ts": "TIMESTAMP"
+}

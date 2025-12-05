@@ -1,0 +1,8 @@
+{
+  "claim_id": "TEXT",
+  "as_at_date": "DATE",
+  "feature_name": "TEXT",
+  "feature_value": "DOUBLE",
+  "shap_value": "DOUBLE",
+  "explanation_rank": "INT"
+}

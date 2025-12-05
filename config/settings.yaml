@@ -1,0 +1,42 @@
+database:
+  path: "data/duckdb/rofl.db"
+  
+training:
+  episodes: 10000
+  max_steps_per_episode: 60
+  batch_size: 64
+  learning_rate: 0.001
+  gamma: 0.99
+  buffer_size: 100000
+  
+models:
+  dqn:
+    hidden_layers: [128, 64]
+    activation: "relu"
+    dropout: 0.1
+  ppo:
+    hidden_layers: [128, 64]
+    activation: "relu"
+    clip_ratio: 0.2
+    entropy_coef: 0.01
+    
+environment:
+  actions: [-0.20, -0.10, -0.05, 0.0, 0.05, 0.10, 0.20]
+  state_dim: 9
+  reward_weights:
+    under_reserve_penalty: 2.0
+    volatility_penalty: 1.0
+    accuracy_bonus: 1.5
+    stability_bonus: 0.5
+    
+inference:
+  model_path: "outputs/models"
+  confidence_threshold: 0.7
+  
+dashboard:
+  title: "ROFL - Reinforcement-Optimized Financial Loss Reserves"
+  port: 8501
+  
+logging:
+  level: "INFO"
+  path: "outputs/logs"
