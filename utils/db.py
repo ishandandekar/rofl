@@ -80,7 +80,10 @@ class ROFLDatabase:
 
     def load_claims_data(self, csv_path: str) -> int:
         df = pd.read_csv(csv_path)
-        self.conn.execute("INSERT OR REPLACE INTO claims_long SELECT * FROM df")
+        # Add missing derived columns with default values
+        df["paid_velocity"] = 0.0
+        df["reserve_gap"] = df["total_incurred"] - (df["paid"] + df["outstanding"])
+        self.conn.execute("INSERT INTO claims_long SELECT * FROM df")
         return len(df)
 
     def get_training_data(self, limit: Optional[int] = None) -> pd.DataFrame:
